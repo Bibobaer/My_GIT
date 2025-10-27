@@ -75,9 +75,9 @@ void VCS::cleaning_expired_commits() {
 
 bool VCS::init(const std::string& directory_path) {
 	/*
-		Прверяем существует ли уже директроия
-		Если да, то выходим
-		Иначе создаем ее и вспомогательные файлы
+		РџСЂРѕРІРµСЂСЏРµРј СЃСѓС‰РµСЃС‚РІСѓРµС‚ Р»Рё СѓР¶Рµ РґРёСЂРµРєС‚СЂРѕРёСЏ
+		Р•СЃР»Рё РґР°, С‚Рѕ РІС‹С…РѕРґРёРј
+		РРЅР°С‡Рµ СЃРѕР·РґР°РµРј РµРµ Рё РІСЃРїРѕРјРѕРіР°С‚РµР»СЊРЅС‹Рµ С„Р°Р№Р»С‹
 	*/
 	try {
 		path new_path(directory_path);
@@ -119,12 +119,12 @@ bool VCS::push(const std::string& commit_message) {
 
 		if (fs::exists(repository_path + "\\.vcs\\HEAD")) {
 			/*
-				если у нас были коммиты до этого, то бежим по основной директроии
-				сравниваем хеши файлов и добавляем те, которых нет
-				остальные не добавляем в коммит
+				РµСЃР»Рё Сѓ РЅР°СЃ Р±С‹Р»Рё РєРѕРјРјРёС‚С‹ РґРѕ СЌС‚РѕРіРѕ, С‚Рѕ Р±РµР¶РёРј РїРѕ РѕСЃРЅРѕРІРЅРѕР№ РґРёСЂРµРєС‚СЂРѕРёРё
+				СЃСЂР°РІРЅРёРІР°РµРј С…РµС€Рё С„Р°Р№Р»РѕРІ Рё РґРѕР±Р°РІР»СЏРµРј С‚Рµ, РєРѕС‚РѕСЂС‹С… РЅРµС‚
+				РѕСЃС‚Р°Р»СЊРЅС‹Рµ РЅРµ РґРѕР±Р°РІР»СЏРµРј РІ РєРѕРјРјРёС‚
 			*/
 			auto current_commit_hash = fs::read_symlink(repository_path + "\\.vcs\\HEAD");
-			// ----------------- Берем хэш текущего коммита ---------------------------------------
+			// ----------------- Р‘РµСЂРµРј С…СЌС€ С‚РµРєСѓС‰РµРіРѕ РєРѕРјРјРёС‚Р° ---------------------------------------
 			std::map<std::string, path> commit_hashes;
 
 			std::function<void(const path&)> get_hashes_from_commits = [&](const path& commit_dir) {
@@ -142,7 +142,7 @@ bool VCS::push(const std::string& commit_message) {
 			};
 			get_hashes_from_commits(current_commit_hash);
 			fs::remove(repository_path + "\\.vcs\\HEAD");
-			// ----------------- Бежим по рабочей директории ---------------------------------------
+			// ----------------- Р‘РµР¶РёРј РїРѕ СЂР°Р±РѕС‡РµР№ РґРёСЂРµРєС‚РѕСЂРёРё ---------------------------------------
 			for (auto& file : fs::directory_iterator(repository_path)) {
 				auto file_path = file.path();
 				if (fs::equivalent(file_path, repository_path + "\\.vcs"))
@@ -150,7 +150,7 @@ bool VCS::push(const std::string& commit_message) {
 
 				auto relative_path = fs::relative(file_path, repository_path);
 				auto target_path = commit_directory / relative_path;
-				// ----------------- Лямбда для копирования ---------------------------------------
+				// ----------------- Р›СЏРјР±РґР° РґР»СЏ РєРѕРїРёСЂРѕРІР°РЅРёСЏ ---------------------------------------
 				std::function<void(const path&, const path&)> copy_commit = [&relative_path, &commit_hashes](const path& From, const path& To) mutable {
 					std::string working_hash = get_file_hash(From.string());
 
@@ -170,7 +170,7 @@ bool VCS::push(const std::string& commit_message) {
 						std::cout << "File { " << To.filename() << " } added to commit\n";
 					}
 				};
-				// ----------------- Копирование файла ---------------------------------------
+				// ----------------- РљРѕРїРёСЂРѕРІР°РЅРёРµ С„Р°Р№Р»Р° ---------------------------------------
 
 				if (fs::is_regular_file(file_path)) {
 					copy_commit(file_path, target_path);
@@ -183,11 +183,11 @@ bool VCS::push(const std::string& commit_message) {
 					}
 				}
 			}
-			// ----------- Создаем ссылку на предыдущий коммит --------------------------------------------
+			// ----------- РЎРѕР·РґР°РµРј СЃСЃС‹Р»РєСѓ РЅР° РїСЂРµРґС‹РґСѓС‰РёР№ РєРѕРјРјРёС‚ --------------------------------------------
 			fs::create_directory_symlink(current_commit_hash, commit_directory + "\\PREV");
 		}
 		else {
-			// ----------- Если это наш первый коммит, то бежим по директории и просто копируем файлы ----
+			// ----------- Р•СЃР»Рё СЌС‚Рѕ РЅР°С€ РїРµСЂРІС‹Р№ РєРѕРјРјРёС‚, С‚Рѕ Р±РµР¶РёРј РїРѕ РґРёСЂРµРєС‚РѕСЂРёРё Рё РїСЂРѕСЃС‚Рѕ РєРѕРїРёСЂСѓРµРј С„Р°Р№Р»С‹ ----
 			for (auto& file : fs::directory_iterator(repository_path)) {
 				auto path = file.path();
 				if (fs::equivalent(path, repository_path + "\\.vcs"))
@@ -211,7 +211,7 @@ bool VCS::push(const std::string& commit_message) {
 				}
 			}
 		}
-		// ------------- Переписываем ссылку на текущий коммит и записываем в джисон --------------
+		// ------------- РџРµСЂРµРїРёСЃС‹РІР°РµРј СЃСЃС‹Р»РєСѓ РЅР° С‚РµРєСѓС‰РёР№ РєРѕРјРјРёС‚ Рё Р·Р°РїРёСЃС‹РІР°РµРј РІ РґР¶РёСЃРѕРЅ --------------
 		fs::create_directory_symlink(commit_directory, repository_path + "\\.vcs\\HEAD");
 		write_commit(commit);
 		return true;
@@ -251,7 +251,7 @@ bool VCS::pull(const unsigned int& commit_id) {
 			return false;
 
 		std::map<path, path> file_state;
-		// -------- Собираем файлы предыдущих комиитов и записываем в мапу ------------------
+		// -------- РЎРѕР±РёСЂР°РµРј С„Р°Р№Р»С‹ РїСЂРµРґС‹РґСѓС‰РёС… РєРѕРјРёРёС‚РѕРІ Рё Р·Р°РїРёСЃС‹РІР°РµРј РІ РјР°РїСѓ ------------------
 		std::function<void(const path&)> apply_commit = [&](const path& commit_dir) {
 			path prev_link = commit_dir / "PREV";
 			if (fs::exists(prev_link) && fs::is_symlink(prev_link)) {
@@ -268,7 +268,7 @@ bool VCS::pull(const unsigned int& commit_id) {
 		};
 
 		apply_commit(commit_directory);
-		// ------- Чистим рабочию директорию ---------------------------
+		// ------- Р§РёСЃС‚РёРј СЂР°Р±РѕС‡РёСЋ РґРёСЂРµРєС‚РѕСЂРёСЋ ---------------------------
 		std::cout << "Cleaning working directory\n";
 		for (auto& entry : fs::directory_iterator(repository_path)) {
 			auto path = entry.path();
@@ -282,7 +282,7 @@ bool VCS::pull(const unsigned int& commit_id) {
 			}
 		}
 
-		// ------------- Востанавливаем файлы. Из за того, что это мапа и это все рекурсивно происходит, так что измененные файлы перепишутся --------
+		// ------------- Р’РѕСЃС‚Р°РЅР°РІР»РёРІР°РµРј С„Р°Р№Р»С‹. РР· Р·Р° С‚РѕРіРѕ, С‡С‚Рѕ СЌС‚Рѕ РјР°РїР° Рё СЌС‚Рѕ РІСЃРµ СЂРµРєСѓСЂСЃРёРІРЅРѕ РїСЂРѕРёСЃС…РѕРґРёС‚, С‚Р°Рє С‡С‚Рѕ РёР·РјРµРЅРµРЅРЅС‹Рµ С„Р°Р№Р»С‹ РїРµСЂРµРїРёС€СѓС‚СЃСЏ --------
 		std::cout << "Restoring files...\n";
 		for (const auto& [relative_path, file_path] : file_state) {
 			try {
@@ -310,8 +310,8 @@ bool VCS::log() {
 	if (!is_repositoty)
 		throw std::runtime_error("No repositories creted");
 	/*
-		get_commit_info возвращает массив строк с нужной инфой
-		просто красиво выводим это через "*"
+		get_commit_info РІРѕР·РІСЂР°С‰Р°РµС‚ РјР°СЃСЃРёРІ СЃС‚СЂРѕРє СЃ РЅСѓР¶РЅРѕР№ РёРЅС„РѕР№
+		РїСЂРѕСЃС‚Рѕ РєСЂР°СЃРёРІРѕ РІС‹РІРѕРґРёРј СЌС‚Рѕ С‡РµСЂРµР· "*"
 	*/
 	try {
 		cleaning_expired_commits();
